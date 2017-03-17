@@ -310,9 +310,21 @@ namespace ClearCanvas.Dicom.Network
         	ListenerInfo info;
             if (!_appList.TryGetValue(association.CalledAE, out info))
             {
-				Platform.Log(LogLevel.Error, "Rejecting association from {0}: Invalid Called AE Title ({1}).", association.CallingAE, association.CalledAE);
-                SendAssociateReject(DicomRejectResult.Permanent, DicomRejectSource.ServiceProviderACSE, DicomRejectReason.CalledAENotRecognized);
-                return;
+		//Enable ClearCanvas to run in promiscuous mode when using AE title "any".
+                if (_appList.ContainsKey("ANY"))
+                {
+                    info = _appList["ANY"];
+                }
+                else if (_appList.ContainsKey("any"))
+                {
+                    info = _appList["any"];
+                }
+                else
+                {
+                    Platform.Log(LogLevel.Error, "Rejecting association from {0}: Invalid Called AE Title ({1}).", association.CallingAE, association.CalledAE);
+                    SendAssociateReject(DicomRejectResult.Permanent, DicomRejectSource.ServiceProviderACSE, DicomRejectReason.CalledAENotRecognized);
+                    return;
+                }
             }
 
             // Populate the AssociationParameters properly
